@@ -31,10 +31,10 @@
 
 #include "SpineCommon.h"
 #include "SpineSprite.h"
-#include "scene/2d/node_2d.h"
+#include "scene/3d/node_3d.h"
 
-class SpineSlotNode : public Node2D {
-	GDCLASS(SpineSlotNode, Node2D)
+class SpineSlotNode : public Node3D {
+	GDCLASS(SpineSlotNode, Node3D)
 
 protected:
 	String slot_name;

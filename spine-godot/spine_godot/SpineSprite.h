@@ -36,8 +36,8 @@
 
 class SpineSlotNode;
 
-class SpineSprite : public VisualInstance3D, public spine::AnimationStateListenerObject {
-	GDCLASS(SpineSprite, VisualInstance3D)
+class SpineSprite : public Node3D, public spine::AnimationStateListenerObject {
+	GDCLASS(SpineSprite, Node3D)
 
 	friend class SpineBone;
 

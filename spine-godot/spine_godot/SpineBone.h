@@ -169,5 +169,7 @@ public:
 
 	Transform2D get_global_transform();
 
+	Transform3D get_global_transform_3d();
+
 	void set_global_transform(Transform2D trans);
 };

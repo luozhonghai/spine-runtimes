@@ -442,6 +442,10 @@ Transform2D SpineBone::get_global_transform() {
 	return get_spine_owner()->get_global_transform_2d() * local;
 }
 
+Transform3D SpineBone::get_global_transform_3d() {
+	return SpineUtilities::to_Transform3D(get_global_transform());
+}
+
 void SpineBone::set_global_transform(Transform2D transform) {
 	SPINE_CHECK(get_spine_object(), )
 	if (!get_spine_owner()) set_transform(transform);

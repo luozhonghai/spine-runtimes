@@ -153,20 +153,20 @@ SpineSprite::SpineSprite() : update_mode(SpineConstant::UpdateMode_Process), pre
 
 	// One material per blend mode, shared across all sprites.
 	if (!default_materials[0].is_valid()) {
-		Ref<CanvasItemMaterial> material_normal(memnew(CanvasItemMaterial));
-		material_normal->set_blend_mode(CanvasItemMaterial::BLEND_MODE_MIX);
+		Ref<StandardMaterial3D> material_normal(memnew(StandardMaterial3D));
+		material_normal->set_blend_mode(StandardMaterial3D::BLEND_MODE_MIX);
 		default_materials[spine::BlendMode_Normal] = material_normal;
 
-		Ref<CanvasItemMaterial> material_additive(memnew(CanvasItemMaterial));
-		material_additive->set_blend_mode(CanvasItemMaterial::BLEND_MODE_ADD);
+		Ref<StandardMaterial3D> material_additive(memnew(StandardMaterial3D));
+		material_additive->set_blend_mode(StandardMaterial3D::BLEND_MODE_ADD);
 		default_materials[spine::BlendMode_Additive] = material_additive;
 
-		Ref<CanvasItemMaterial> material_multiply(memnew(CanvasItemMaterial));
-		material_multiply->set_blend_mode(CanvasItemMaterial::BLEND_MODE_MUL);
+		Ref<StandardMaterial3D> material_multiply(memnew(StandardMaterial3D));
+		material_multiply->set_blend_mode(StandardMaterial3D::BLEND_MODE_MUL);
 		default_materials[spine::BlendMode_Multiply] = material_multiply;
 
-		Ref<CanvasItemMaterial> material_screen(memnew(CanvasItemMaterial));
-		material_screen->set_blend_mode(CanvasItemMaterial::BLEND_MODE_SUB);
+		Ref<StandardMaterial3D> material_screen(memnew(StandardMaterial3D));
+		material_screen->set_blend_mode(StandardMaterial3D::BLEND_MODE_SUB);
 		default_materials[spine::BlendMode_Screen] = material_screen;
 	}
 
@@ -261,6 +261,7 @@ void SpineSprite::generate_meshes_for_slots(Ref<SpineSkeleton> skeleton_ref) {
 	for (int i = 0, n = (int) skeleton->getSlots().size(); i < n; i++) {
 		auto mesh_instance = memnew(MeshInstance3D);
 		mesh_instance->set_position(Vector3(0, 0, 0));
+		mesh_instance->set_mesh(memnew(ArrayMesh)); //Add empty array mesh
 		mesh_instance->set_material_override(default_materials[spine::BlendMode_Normal]);
 		// Needed so that debug drawables are rendered in front of attachments
 		//mesh_instance->set_draw_behind_parent(true);
@@ -286,10 +287,11 @@ void SpineSprite::sort_slot_nodes() {
 
 	auto draw_order = skeleton->get_spine_object()->getDrawOrder();
 	for (int i = 0; i < get_child_count(); i++) {
-		auto child = cast_to<Node2D>(get_child(i));
+		//TODO-Julian:  adjust sort order via Z-Position
+		auto child = cast_to<Node3D>(get_child(i));
 		if (!child) continue;
 		// Needed so that debug drawables are rendered in front of attachments and other nodes under the sprite.
-		child->set_draw_behind_parent(true);
+		//child->set_draw_behind_parent(true);
 		auto slot_node = Object::cast_to<SpineSlotNode>(get_child(i));
 		if (!slot_node) continue;
 		if (slot_node->get_slot_index() == -1 || slot_node->get_slot_index() >= (int) draw_order.size()) {
@@ -301,6 +303,14 @@ void SpineSprite::sort_slot_nodes() {
 	for (int i = 0; i < (int) draw_order.size(); i++) {
 		int slot_index = draw_order[i]->getData().getIndex();
 		int mesh_index = mesh_instances[i]->get_index();
+
+
+		//TODO-Julian: will this always get the corresponding mesh_instance?
+		auto child = cast_to<Node3D>(get_child(i));
+		if (child) {
+			float sorting_z = slot_index * 0.05f;
+			child->set_position(Vector3(0.0f, 0.0f, sorting_z));
+		}
 		spine::Vector<SpineSlotNode *> &nodes = slot_nodes[slot_index];
 		for (int j = 0; j < (int) nodes.size(); j++) {
 			auto node = nodes[j];
@@ -490,7 +500,12 @@ void SpineSprite::update_skeleton(float delta) {
 static void clear_mesh_instance(MeshInstance3D *mesh_instance) {
 #if VERSION_MAJOR > 3
 	//RenderingServer::get_singleton()->mesh_clear(mesh_instance->get_mesh()->get_rid());
-	mesh_instance->set_mesh(nullptr); //TODO: is this save from mem leaks??
+	Ref<ArrayMesh> am = mesh_instance->get_mesh(); 
+	if (am.is_null())
+		return;
+
+	am->clear_surfaces();
+
 #else
 	VisualServer::get_singleton()->canvas_item_clear(mesh_instance->get_canvas_item());
 #endif
@@ -519,8 +534,17 @@ static void add_triangles(MeshInstance3D *mesh_instance,
 	// Julian: for simplicity and easier maintainability, convert the vertices to 3D here, as instead in update_meshes().
 	Vector<Vector3> vertices_3d;
 	for (auto p : vertices) {
-		vertices_3d.append(Vector3(p.x, p.y, 0.0f));
+		vertices_3d.append(Vector3(-p.x, -p.y, 0.0f));
 	}
+
+	Ref<ArrayMesh> am = mesh_instance->get_mesh();
+	if (am.is_null()) {
+		Ref<ArrayMesh> am_new = memnew(ArrayMesh);// Note-Julian: can't assign to am direcitly, because "=" is ambigious?
+		am = am_new;
+		mesh_instance->set_mesh(am);
+	}
+
+	am->clear_surfaces(); //TODO: already done in clear_mesh_instance
 
 	Array arr;
 	arr.resize(RenderingServer::ARRAY_MAX);
@@ -528,12 +552,29 @@ static void add_triangles(MeshInstance3D *mesh_instance,
 	arr[RenderingServer::ARRAY_TEX_UV] = uvs;
 	arr[RenderingServer::ARRAY_COLOR] = colors;
 	arr[RenderingServer::ARRAY_INDEX] = indices;
-
-	Ref<ArrayMesh> am = memnew(ArrayMesh);
 	am->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
-	mesh_instance->set_mesh(am);
-	//RenderingServer::get_singleton()->mesh_add_surface_from_arrays(mesh_instance->get_mesh()->get_rid(), RS::PRIMITIVE_TRIANGLES, arr);
-	//	mesh_instance->get_mesh()->get_rid(),
+
+
+	Ref<StandardMaterial3D> mesh_material = mesh_instance->get_material_override();
+	if (renderer_object->canvas_texture.is_valid() && mesh_material.is_valid()) {
+
+		Ref<Texture2D> albedo_current = mesh_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+		Ref<Texture2D> albedo_new = renderer_object->canvas_texture->get_diffuse_texture();
+
+		// Note-Julian: something is slowing down the engine due to tree notification_changed? This helps...
+		if (albedo_current != albedo_new) {
+			mesh_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, albedo_new);
+		}
+
+		Ref<Texture2D> normal_current = mesh_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
+		Ref<Texture2D> normal_new = renderer_object->canvas_texture->get_normal_texture();
+		// Note-Julian: something is slowing down the engine due to tree notification_changed? This helps...
+		if (normal_current != normal_new) {
+			mesh_material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, normal_new);
+		}
+	}
+	
+	
 #else
 	auto texture = renderer_object->texture;
 	auto normal_map = renderer_object->normal_map;
@@ -1008,12 +1049,5 @@ bool SpineSprite::_edit_use_rect() const {
 
 Transform2D SpineSprite::get_global_transform_2d()
 {
-	Transform3D t = get_global_transform();
-	Vector3 p = t.origin;
-	float rot = 0.0f; // TODO:
-	Vector3 scale = t.basis.get_scale();
-	float skew = 0.0f; //TODO:
-
-	Transform2D transform3d_as_2d(rot, Size2(scale.x, scale.y), skew, Vector2(p.x, p.y));
-	return transform3d_as_2d;
+	return SpineUtilities::to_Transform2D(get_global_transform());
 }
