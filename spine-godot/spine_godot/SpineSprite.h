@@ -31,13 +31,13 @@
 
 #include "SpineSkeleton.h"
 #include "SpineAnimationState.h"
-#include "scene/2d/node_2d.h"
-#include "scene/2d/mesh_instance_2d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 class SpineSlotNode;
 
-class SpineSprite : public Node2D, public spine::AnimationStateListenerObject {
-	GDCLASS(SpineSprite, Node2D)
+class SpineSprite : public VisualInstance3D, public spine::AnimationStateListenerObject {
+	GDCLASS(SpineSprite, VisualInstance3D)
 
 	friend class SpineBone;
 
@@ -67,7 +67,7 @@ protected:
 	Color debug_clipping_color;
 
 	spine::Vector<spine::Vector<SpineSlotNode *>> slot_nodes;
-	Vector<MeshInstance2D *> mesh_instances;
+	Vector<MeshInstance3D *> mesh_instances;
 	static Ref<CanvasItemMaterial> default_materials[4];
 	Ref<Material> normal_material;
 	Ref<Material> additive_material;
@@ -185,6 +185,9 @@ public:
 	Color get_debug_clipping_color() { return debug_clipping_color; }
 
 	void set_debug_clipping_color(const Color &color) { debug_clipping_color = color; }
+
+	//Julian: fallback
+	Transform2D get_global_transform_2d();
 
 #ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
