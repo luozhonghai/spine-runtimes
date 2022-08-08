@@ -308,7 +308,7 @@ void SpineSprite::sort_slot_nodes() {
 		//TODO-Julian: will this always get the corresponding mesh_instance?
 		auto child = cast_to<Node3D>(get_child(i));
 		if (child) {
-			float sorting_z = slot_index * 0.05f;
+			const float sorting_z = mesh_index * -0.05f;
 			child->set_position(Vector3(0.0f, 0.0f, sorting_z));
 		}
 		spine::Vector<SpineSlotNode *> &nodes = slot_nodes[slot_index];
