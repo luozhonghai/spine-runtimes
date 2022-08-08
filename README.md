@@ -1,3 +1,7 @@
+This is a simple port of the Spine runtime for Godot 4, but with support for the 3D system instead. Work in Progress.
+
+Original readme below.
+___
 # Spine Runtimes
 
 This GitHub project hosts the Spine Runtimes which are needed to use [Spine](http://esotericsoftware.com/) 2D skeletal animation data with various game toolkits.
