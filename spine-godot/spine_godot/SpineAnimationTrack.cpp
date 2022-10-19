@@ -4,7 +4,7 @@
 #else
 #include "core/engine.h"
 #endif
-#include "godot/editor/editor_node.h"
+#include "editor/editor_node.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 
