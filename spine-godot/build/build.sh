@@ -20,7 +20,7 @@ if [ ! -d ../godot ]; then
 fi
 
 target="target=${1%/}"
-dev="false"
+dev="true"
 if [ -f "../godot/custom.py" ]; then
 	dev="true"
 fi
@@ -58,7 +58,7 @@ if [ `uname` == 'Darwin' ] && [ $dev = "false" ]; then
 	popd
 else
 	if [ "$OSTYPE" = "msys" ]; then
-		target="$target vsproj=yes livepp=$LIVEPP"
+		target="$target vsproj=yes livepp=C:/dev/live++"
 	fi
 	scons $target compiledb=yes custom_modules="../spine_godot" --jobs=$cpus	
 	if [ -f "bin/godot.x11.opt.tools.64" ]; then
