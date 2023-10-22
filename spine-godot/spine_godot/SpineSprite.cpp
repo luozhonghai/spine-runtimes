@@ -60,8 +60,10 @@ static int sprite_count = 0;
 static spine::Vector<unsigned short> quad_indices;
 static spine::Vector<float> scratch_vertices;
 static Vector<Vector2> scratch_points;
-
-
+static Vector<Vector2> scratch_uvs;
+static Vector<Color> scratch_colors;
+static Vector<int> scratch_indices;
+/*
 static void clear_triangles(SpineMesh2D *mesh_instance) {
 #if VERSION_MAJOR > 3
 	RenderingServer::get_singleton()->canvas_item_clear(mesh_instance->get_canvas_item());
@@ -242,6 +244,7 @@ void SpineMesh2D::update_mesh(const Vector<Point2> &vertices,
 			renderer_object->normal_map.is_null() ? RID() : renderer_object->normal_map->get_rid());
 #endif
 }
+*/
 
 void SpineSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton_data_res", "skeleton_data_res"), &SpineSprite::set_skeleton_data_res);
@@ -859,6 +862,7 @@ void SpineSprite::update_meshes(Ref<SpineSkeleton> skeleton_ref) {
 		}
 
 		if (indices->size() > 0) {
+			/*
 			mesh_instance->set_light_mask(get_light_mask());
 			size_t num_vertices = vertices->size() / 2;
 			mesh_instance->vertices.resize((int) num_vertices);
@@ -891,6 +895,23 @@ void SpineSprite::update_meshes(Ref<SpineSkeleton> skeleton_ref) {
 			}
 
 			mesh_instance->renderer_object = renderer_object;
+			*/
+			// Set the mesh
+			size_t num_vertices = vertices->size() / 2;
+			scratch_points.resize((int) num_vertices);
+			memcpy(scratch_points.ptrw(), vertices->buffer(), num_vertices * 2 * sizeof(float));
+			scratch_uvs.resize((int) num_vertices);
+			memcpy(scratch_uvs.ptrw(), uvs->buffer(), num_vertices * 2 * sizeof(float));
+			scratch_colors.resize((int) num_vertices);
+			for (int j = 0; j < (int) num_vertices; j++) {
+				scratch_colors.set(j, Color(tint.r, tint.g, tint.b, tint.a));
+			}
+			scratch_indices.resize((int) indices->size());
+			for (int j = 0; j < (int) indices->size(); ++j)
+			{
+				scratch_indices.set(j, indices->buffer()[j]);
+			}
+			add_triangles(mesh_instance, scratch_points, scratch_uvs, scratch_colors, scratch_indices, renderer_object);
 
 			spine::BlendMode blend_mode = slot->getData().getBlendMode();
 			Ref<Material> custom_material;
