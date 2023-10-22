@@ -43,11 +43,12 @@ Error SpineAtlasResourceImportPlugin::import(const String &source_file, const St
 	atlas->load_from_atlas_file(source_file);
 
 	String file_name = vformat("%s.%s", save_path, get_save_extension());
-#if VERSION_MAJOR > 3
+	#if VERSION_MAJOR > 3
 	auto error = ResourceSaver::save(atlas, file_name);
-#else
+	#else
 	auto error = ResourceSaver::save(file_name, atlas);
-#endif
+	#endif
+	
 	return error;
 }
 
@@ -76,11 +77,13 @@ Error SpineJsonResourceImportPlugin::import(const String &source_file, const Str
 	if (error != OK) return error;
 
 	String file_name = vformat("%s.%s", save_path, get_save_extension());
-#if VERSION_MAJOR > 3
-	error = ResourceSaver::save(skeleton_file_res, file_name);
-#else
-	error = ResourceSaver::save(file_name, skeleton_file_res);
-#endif
+
+	#if VERSION_MAJOR > 3
+	auto error = ResourceSaver::save(skeleton_file_res, file_name);
+	#else
+	auto error = ResourceSaver::save(file_name, skeleton_file_res);
+	#endif
+	
 	return error;
 }
 
@@ -94,11 +97,12 @@ Error SpineBinaryResourceImportPlugin::import(const String &source_file, const S
 	if (error != OK) return error;
 
 	String file_name = vformat("%s.%s", save_path, get_save_extension());
-#if VERSION_MAJOR > 3
-	error = ResourceSaver::save(skeleton_file_res, file_name);
-#else
-	error = ResourceSaver::save(file_name, skeleton_file_res);
-#endif
+	#if VERSION_MAJOR > 3
+	auto error = ResourceSaver::save(skeleton_file_res, file_name);
+	#else
+	auto error = ResourceSaver::save(file_name, skeleton_file_res);
+	#endif
+
 	return error;
 }
 
@@ -220,7 +224,7 @@ void SpineEditorPropertyAnimationMixes::update_property() {
 		hbox->add_child(delete_button);
 		delete_button->set_text("Remove");
 #if VERSION_MAJOR > 3
-		delete_button->connect(SNAME("pressed"), callable_mp(this, &SpineEditorPropertyAnimationMixes::delete_mix).bind(varray(i)));
+		delete_button->connect("pressed", callable_mp(this, &SpineEditorPropertyAnimationMixes::delete_mix).bind(varray(i)));
 #else
 		delete_button->connect(SNAME("pressed"), this, SNAME("delete_mix"), varray(i));
 #endif

@@ -439,7 +439,11 @@ Transform2D SpineBone::get_global_transform() {
 	local.rotate(spine::MathUtil::Deg_Rad * get_world_rotation_x());
 	local.scale(Vector2(get_world_scale_x(), get_world_scale_y()));
 	local.set_origin(Vector2(get_world_x(), get_world_y()));
-	return get_spine_owner()->get_global_transform() * local;
+	return get_spine_owner()->get_global_transform_2d() * local;
+}
+
+Transform3D SpineBone::get_global_transform_3d() {
+	return SpineUtilities::to_Transform3D(get_global_transform());
 }
 
 void SpineBone::set_global_transform(Transform2D transform) {
@@ -449,7 +453,7 @@ void SpineBone::set_global_transform(Transform2D transform) {
 
 	auto bone = get_spine_object();
 
-	Transform2D inverse_sprite_transform = get_spine_owner()->get_global_transform().affine_inverse();
+	Transform2D inverse_sprite_transform = get_spine_owner()->get_global_transform_2d().affine_inverse();
 	transform = inverse_sprite_transform * transform;
 	Vector2 position = transform.get_origin();
 	float rotation = spine::MathUtil::Rad_Deg * transform.get_rotation();

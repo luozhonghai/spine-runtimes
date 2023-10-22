@@ -107,7 +107,7 @@ class SpineAtlasResourceFormatSaver : public ResourceFormatSaver {
 
 public:
 #if VERSION_MAJOR > 3
-	Error save(const RES &resource, const String &path, uint32_t flags) override;
+	Error save(const Ref<Resource> &resource, const String &path, uint32_t p_flags = 0) override;
 #else
 	Error save(const String &path, const RES &resource, uint32_t flags) override;
 #endif

@@ -164,7 +164,7 @@ void SpineSlotNode::update_transform(SpineSprite *sprite) {
 	}
 	auto bone = slot->get_bone();
 	if (!bone.is_valid()) return;
-	this->set_global_transform(bone->get_global_transform());
+	this->set_global_transform(bone->get_global_transform_3d());
 }
 
 void SpineSlotNode::set_slot_name(const String &_slot_name) {

@@ -158,4 +158,37 @@ public:
 	}
 };
 
+
+class SpineUtilities;
+
+static class SpineUtilities {
+public:
+	static Transform3D to_Transform3D(Transform2D t) {
+		Vector2 p = t.get_origin();
+		float rot = t.get_rotation();
+		Vector2 scale = t.get_scale();
+		float skew = t.get_skew();
+
+		Basis basis; //TODO
+
+		basis.scale(Vector3(scale.x, scale.y, 1.0f));
+		Transform3D new_transform(basis, Vector3(p.x, p.y, 0.0f));
+
+		return new_transform;
+	}
+
+	static Transform2D to_Transform2D(Transform3D t) {
+		Vector3 p = t.origin;
+		float rot = 0.0f; // TODO:
+		Vector3 scale = t.basis.get_scale();
+		float skew = 0.0f; //TODO:
+
+		Transform2D transform3d_as_2d(rot, Size2(scale.x, scale.y), skew, Vector2(p.x, p.y));
+		return transform3d_as_2d;
+	}
+};
+
+
+
 #endif
+

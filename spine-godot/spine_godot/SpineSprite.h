@@ -31,80 +31,13 @@
 
 #include "SpineSkeleton.h"
 #include "SpineAnimationState.h"
-#include "scene/2d/node_2d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 class SpineSlotNode;
 
-struct SpineRendererObject;
-
-class SpineSprite;
-
-class Attachment;
-
-class SpineMesh2D : public Node2D {
-	GDCLASS(SpineMesh2D, Node2D);
-
-	friend class SpineSprite;
-
-protected:
-	void _notification(int what);
-	static void _bind_methods();
-
-	Vector<Vector2> vertices;
-	Vector<Vector2> uvs;
-	Vector<Color> colors;
-	Vector<int> indices;
-	SpineRendererObject *renderer_object;
-
-	bool indices_changed;
-
-#if VERSION_MAJOR > 3
-	RID mesh;
-	uint32_t surface_offsets[RS::ARRAY_MAX];
-	int num_vertices;
-	int num_indices;
-	PackedByteArray vertex_buffer;
-	PackedByteArray attribute_buffer;
-	uint32_t vertex_stride;
-	uint32_t attribute_stride;
-#else
-	RID mesh;
-	uint32_t surface_offsets[VS::ARRAY_MAX];
-	int num_vertices;
-	int num_indices;
-	uint32_t mesh_surface_offsets[VS::ARRAY_MAX];
-	PoolByteArray mesh_buffer;
-	uint32_t mesh_stride[VS::ARRAY_MAX];
-	uint32_t mesh_surface_format;
-#endif
-
-public:
-#if VERSION_MAJOR > 3
-	SpineMesh2D() : renderer_object(nullptr), indices_changed(true), num_vertices(0), num_indices(0), vertex_stride(0), attribute_stride(0){};
-	~SpineMesh2D() {
-		if (mesh.is_valid()) {
-			RS::get_singleton()->free(mesh);
-		}
-	}
-#else
-	SpineMesh2D() : renderer_object(nullptr), indices_changed(true), num_vertices(0), num_indices(0){};
-	~SpineMesh2D() {
-		if (mesh.is_valid()) {
-			VS::get_singleton()->free(mesh);
-		}
-	}
-#endif
-
-	void update_mesh(const Vector<Point2> &vertices,
-					 const Vector<Point2> &uvs,
-					 const Vector<Color> &colors,
-					 const Vector<int> &indices,
-					 SpineRendererObject *renderer_object);
-};
-
-class SpineSprite : public Node2D,
-					public spine::AnimationStateListenerObject {
-	GDCLASS(SpineSprite, Node2D)
+class SpineSprite : public Node3D, public spine::AnimationStateListenerObject {
+	GDCLASS(SpineSprite, Node3D)
 
 	friend class SpineBone;
 
@@ -136,7 +69,7 @@ protected:
 	Color debug_clipping_color;
 
 	spine::Vector<spine::Vector<SpineSlotNode *>> slot_nodes;
-	Vector<SpineMesh2D *> mesh_instances;
+	Vector<MeshInstance3D *> mesh_instances;
 	static Ref<CanvasItemMaterial> default_materials[4];
 	Ref<Material> normal_material;
 	Ref<Material> additive_material;
@@ -262,6 +195,9 @@ public:
 	Color get_debug_clipping_color() { return debug_clipping_color; }
 
 	void set_debug_clipping_color(const Color &color) { debug_clipping_color = color; }
+
+	//Julian: fallback
+	Transform2D get_global_transform_2d();
 
 #ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;

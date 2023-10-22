@@ -199,7 +199,7 @@ bool SpineSkeletonFileResourceFormatLoader::handles_type(const String &type) con
 }
 
 #if VERSION_MAJOR > 3
-Error SpineSkeletonFileResourceFormatSaver::save(const RES &resource, const String &path, uint32_t flags) {
+Error SpineSkeletonFileResourceFormatSaver::save(const Ref<Resource> &resource, const String &path, uint32_t p_flags) {
 #else
 Error SpineSkeletonFileResourceFormatSaver::save(const String &path, const RES &resource, uint32_t flags) {
 #endif
