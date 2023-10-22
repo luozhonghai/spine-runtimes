@@ -460,6 +460,8 @@ void SpineSprite::generate_meshes_for_slots(Ref<SpineSkeleton> skeleton_ref) {
 		mesh_instance->set_position(Vector3(0, 0, 0));
 		mesh_instance->set_mesh(memnew(ArrayMesh)); //Add empty array mesh
 		mesh_instance->set_material_override(default_materials[spine::BlendMode_Normal]);
+
+		mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		// Needed so that debug drawables are rendered in front of attachments
 		//mesh_instance->set_draw_behind_parent(true);
 		add_child(mesh_instance);
